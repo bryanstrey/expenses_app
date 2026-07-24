@@ -19,6 +19,19 @@ export const CATEGORY_META: Record<
   'Outro':        { icon: '📌', color: '#6B6560', bg: '#6B6560', light: '#F0EEEC' },
 }
 
+export const TRIP_GRADIENTS: Array<[string, string]> = [
+  ['#1B4B4A', '#0F2E2D'],
+  ['#2D3A6B', '#1A2240'],
+  ['#6B2D3A', '#401A22'],
+  ['#2D5A3A', '#1A3822'],
+  ['#5A3A1A', '#382208'],
+  ['#4A2D6B', '#2A1A40'],
+  ['#1A4A6B', '#0D2840'],
+  ['#6B4A1A', '#402A08'],
+]
+
+export const TRIP_EMOJIS = ['✈️', '🌍', '🏖️', '🗼', '🏔️', '🌺', '🎌', '🗺️', '🛳️', '🌴']
+
 export const COLORS = {
   bg: '#F0ECE7',
   screenBg: '#FAF7F2',

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput } from 'react-native'
-import { Category, Expense } from '../types'
+import { Category, Expense, Trip } from '../types'
 import { CATEGORIES, CATEGORY_META, COLORS } from '../constants'
 import { fmt, fmtDate } from '../utils'
 import { TotalBanner } from '../components/TotalBanner'
@@ -8,15 +8,19 @@ import { CategoryPill } from '../components/CategoryPill'
 import { ExpenseCard } from '../components/ExpenseCard'
 
 export function DashboardScreen({
+  trip,
   expenses,
   onAddExpense,
   onEditExpense,
   onDeleteExpense,
+  onBack,
 }: {
+  trip: Trip
   expenses: Expense[]
   onAddExpense: () => void
   onEditExpense: (expense: Expense) => void
   onDeleteExpense: (id: string) => void
+  onBack: () => void
 }) {
   const [activeFilter, setActiveFilter] = useState<Category | 'Todos'>('Todos')
 
@@ -69,7 +73,7 @@ export function DashboardScreen({
 
   return (
     <View style={{ flex: 1 }}>
-      <TotalBanner total={total} count={dateFiltered.length} dateLabel={dateFilterLabel} />
+      <TotalBanner trip={trip} total={total} count={dateFiltered.length} dateLabel={dateFilterLabel} onBack={onBack} />
 
       {/* Filtros */}
       <View style={styles.filterRow}>

@@ -15,10 +15,12 @@ import { CATEGORIES, CATEGORY_META, COLORS } from '../constants'
 import { fmt, fmtDate, todayISO, uid } from '../utils'
 
 export function ExpenseFormScreen({
+  tripId,
   initialExpense,
   onSave,
   onBack,
 }: {
+  tripId: string
   /** Se informado, o formulário abre em modo edição, já preenchido. */
   initialExpense?: Expense
   onSave: (e: Expense) => void
@@ -52,6 +54,7 @@ export function ExpenseFormScreen({
     }
     onSave({
       id: initialExpense?.id ?? uid(),
+      tripId,
       name: name.trim(),
       category,
       customCategory: category === 'Outro' && customCategory.trim() ? customCategory.trim() : undefined,

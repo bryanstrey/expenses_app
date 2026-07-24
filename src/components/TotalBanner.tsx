@@ -1,22 +1,31 @@
 import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
-import { fmt } from '../utils'
+import { fmt, fmtDateShort } from '../utils'
 import { COLORS } from '../constants'
+import { Trip } from '../types'
 
 export function TotalBanner({
+  trip,
   total,
   count,
   dateLabel,
+  onBack,
 }: {
+  trip: Trip
   total: number
   count: number
   dateLabel?: string
+  onBack: () => void
 }) {
   return (
-    <LinearGradient colors={[COLORS.tealMain, COLORS.tealDark]} style={styles.banner}>
+    <LinearGradient colors={[trip.gradientFrom, trip.gradientTo]} style={styles.banner}>
       <View style={[styles.circle, { top: -30, right: -30, width: 120, height: 120 }]} />
       <View style={[styles.circle, { bottom: -20, left: '40%', width: 80, height: 80 }]} />
+
+      <TouchableOpacity onPress={onBack} style={styles.backBtn}>
+        <Text style={{ color: '#fff', fontSize: 16 }}>← Viagens</Text>
+      </TouchableOpacity>
 
       <View style={styles.row}>
         <View style={{ flex: 1 }}>
@@ -34,9 +43,11 @@ export function TotalBanner({
           </View>
         </View>
         <View style={styles.tripBox}>
-          <Text style={styles.tripEmoji}>✈️</Text>
-          <Text style={styles.tripCity}>Roma</Text>
-          <Text style={styles.tripDate}>Jul 2025</Text>
+          <Text style={styles.tripEmoji}>{trip.emoji}</Text>
+          <Text style={styles.tripCity} numberOfLines={1}>{trip.name}</Text>
+          <Text style={styles.tripDate}>
+            {fmtDateShort(trip.startDate)} → {fmtDateShort(trip.endDate)}
+          </Text>
         </View>
       </View>
     </LinearGradient>
@@ -47,7 +58,7 @@ const styles = StyleSheet.create({
   banner: {
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
-    paddingTop: 28,
+    paddingTop: 20,
     paddingHorizontal: 24,
     paddingBottom: 36,
     overflow: 'hidden',
@@ -57,6 +68,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: 'rgba(255,255,255,0.04)',
   },
+  backBtn: { alignSelf: 'flex-start', marginBottom: 16 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   label: { color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '500', letterSpacing: 0.5, marginBottom: 6 },
   total: { color: '#FFFFFF', fontSize: 38, fontWeight: '400', lineHeight: 42 },
@@ -76,8 +88,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
     alignItems: 'center',
+    maxWidth: 110,
   },
-  tripEmoji: { fontSize: 11, marginBottom: 3 },
+  tripEmoji: { fontSize: 18, marginBottom: 3 },
   tripCity: { color: '#FFFFFF', fontSize: 11, fontWeight: '600' },
-  tripDate: { color: 'rgba(255,255,255,0.5)', fontSize: 10 },
+  tripDate: { color: 'rgba(255,255,255,0.5)', fontSize: 9, marginTop: 2 },
 })
