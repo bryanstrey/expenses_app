@@ -45,12 +45,3 @@ src/
     DashboardScreen.tsx        → lista de gastos, filtros por categoria/data
     AddExpenseScreen.tsx       → formulário de novo gasto
 ```
-
-## Próximos passos sugeridos
-
-- Trocar o campo de data (hoje é texto `AAAA-MM-DD`) por um seletor nativo com
-  `@react-native-community/datetimepicker`.
-- Adicionar botão de excluir gasto na `ExpenseCard` (a função `deleteExpense` já existe
-  em `src/db/database.ts`, só falta ligar na UI).
-- Se quiser um ORM com schema tipado e migrations (mais parecido ainda com Room),
-  dá pra evoluir para **Drizzle ORM** por cima do `expo-sqlite` sem trocar a estrutura do projeto.
