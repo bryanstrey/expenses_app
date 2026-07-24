@@ -10,9 +10,13 @@ import { ExpenseCard } from '../components/ExpenseCard'
 export function DashboardScreen({
   expenses,
   onAddExpense,
+  onEditExpense,
+  onDeleteExpense,
 }: {
   expenses: Expense[]
   onAddExpense: () => void
+  onEditExpense: (expense: Expense) => void
+  onDeleteExpense: (id: string) => void
 }) {
   const [activeFilter, setActiveFilter] = useState<Category | 'Todos'>('Todos')
 
@@ -182,7 +186,14 @@ export function DashboardScreen({
               </Text>
             </View>
           ) : (
-            sorted.map(expense => <ExpenseCard key={expense.id} expense={expense} />)
+            sorted.map(expense => (
+              <ExpenseCard
+                key={expense.id}
+                expense={expense}
+                onEdit={onEditExpense}
+                onDelete={onDeleteExpense}
+              />
+            ))
           )}
         </View>
       </ScrollView>

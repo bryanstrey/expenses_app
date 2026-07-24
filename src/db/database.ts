@@ -73,3 +73,18 @@ export function deleteExpense(id: string): void {
 export function clearAllExpenses(): void {
   db.execSync('DELETE FROM expenses;')
 }
+
+/** Atualiza um gasto existente (identificado pelo id). */
+export function updateExpense(expense: Expense): void {
+  db.runSync(
+    `UPDATE expenses
+     SET name = ?, category = ?, customCategory = ?, amount = ?, date = ?
+     WHERE id = ?;`,
+    expense.name,
+    expense.category,
+    expense.customCategory ?? null,
+    expense.amount,
+    expense.date,
+    expense.id
+  )
+}

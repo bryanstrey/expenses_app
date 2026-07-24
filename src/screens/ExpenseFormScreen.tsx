@@ -14,18 +14,23 @@ import { Category, Expense } from '../types'
 import { CATEGORIES, CATEGORY_META, COLORS } from '../constants'
 import { fmt, fmtDate, todayISO, uid } from '../utils'
 
-export function AddExpenseScreen({
-  onAdd,
+export function ExpenseFormScreen({
+  initialExpense,
+  onSave,
   onBack,
 }: {
-  onAdd: (e: Expense) => void
+  /** Se informado, o formulário abre em modo edição, já preenchido. */
+  initialExpense?: Expense
+  onSave: (e: Expense) => void
   onBack: () => void
 }) {
-  const [name, setName] = useState('')
-  const [category, setCategory] = useState<Category>('Alimentação')
-  const [customCategory, setCustomCategory] = useState('')
-  const [amount, setAmount] = useState('')
-  const [date, setDate] = useState(todayISO())
+  const isEditing = !!initialExpense
+
+  const [name, setName] = useState(initialExpense?.name ?? '')
+  const [category, setCategory] = useState<Category>(initialExpense?.category ?? 'Alimentação')
+  const [customCategory, setCustomCategory] = useState(initialExpense?.customCategory ?? '')
+  const [amount, setAmount] = useState(initialExpense ? String(initialExpense.amount) : '')
+  const [date, setDate] = useState(initialExpense?.date ?? todayISO())
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitted, setSubmitted] = useState(false)
 
@@ -45,8 +50,8 @@ export function AddExpenseScreen({
       setErrors(e)
       return
     }
-    onAdd({
-      id: uid(),
+    onSave({
+      id: initialExpense?.id ?? uid(),
       name: name.trim(),
       category,
       customCategory: category === 'Outro' && customCategory.trim() ? customCategory.trim() : undefined,
@@ -73,10 +78,12 @@ export function AddExpenseScreen({
           <TouchableOpacity onPress={onBack} style={styles.backBtn}>
             <Text style={{ color: '#fff', fontSize: 18 }}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerEyebrow}>NOVO GASTO</Text>
+          <Text style={styles.headerEyebrow}>{isEditing ? 'EDITAR GASTO' : 'NOVO GASTO'}</Text>
         </View>
-        <Text style={styles.headerTitle}>Registrar Gasto</Text>
-        <Text style={styles.headerSubtitle}>Preencha os detalhes abaixo</Text>
+        <Text style={styles.headerTitle}>{isEditing ? 'Editar Gasto' : 'Registrar Gasto'}</Text>
+        <Text style={styles.headerSubtitle}>
+          {isEditing ? 'Ajuste os detalhes abaixo' : 'Preencha os detalhes abaixo'}
+        </Text>
       </LinearGradient>
 
       <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
@@ -206,7 +213,9 @@ export function AddExpenseScreen({
             colors={submitted ? ['#3A7A5A', '#3A7A5A'] : [COLORS.tealMain, COLORS.tealDark]}
             style={styles.submitBtn}
           >
-            <Text style={styles.submitText}>{submitted ? '✓ Gasto adicionado!' : 'Registrar Gasto'}</Text>
+            <Text style={styles.submitText}>
+              {submitted ? (isEditing ? '✓ Alterações salvas!' : '✓ Gasto adicionado!') : isEditing ? 'Salvar Alterações' : 'Registrar Gasto'}
+            </Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>

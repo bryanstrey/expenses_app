@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native'
 import { Expense } from '../types'
 import { CATEGORY_META, COLORS } from '../constants'
 import { fmt, fmtDate } from '../utils'
@@ -10,12 +10,31 @@ function expenseLabel(expense: Expense) {
     : expense.category
 }
 
-export function ExpenseCard({ expense }: { expense: Expense }) {
+export function ExpenseCard({
+  expense,
+  onEdit,
+  onDelete,
+}: {
+  expense: Expense
+  onEdit: (expense: Expense) => void
+  onDelete: (id: string) => void
+}) {
   const meta = CATEGORY_META[expense.category]
   const label = expenseLabel(expense)
 
+  const confirmDelete = () => {
+    Alert.alert(
+      'Excluir gasto',
+      `Tem certeza que deseja excluir "${expense.name}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Excluir', style: 'destructive', onPress: () => onDelete(expense.id) },
+      ]
+    )
+  }
+
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={() => onEdit(expense)}>
       <View style={[styles.iconBox, { backgroundColor: meta.light }]}>
         <Text style={{ fontSize: 20 }}>{meta.icon}</Text>
       </View>
@@ -31,7 +50,14 @@ export function ExpenseCard({ expense }: { expense: Expense }) {
           </Text>
         </View>
       </View>
-    </View>
+      <TouchableOpacity
+        onPress={confirmDelete}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        style={styles.deleteBtn}
+      >
+        <Text style={{ fontSize: 16 }}>🗑️</Text>
+      </TouchableOpacity>
+    </TouchableOpacity>
   )
 }
 
@@ -68,4 +94,8 @@ const styles = StyleSheet.create({
     maxWidth: 90,
   },
   categoryText: { fontSize: 11, fontWeight: '600' },
+  deleteBtn: {
+    marginLeft: 6,
+    paddingLeft: 6,
+  },
 })

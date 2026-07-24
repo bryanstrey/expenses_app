@@ -4,26 +4,45 @@ import { StatusBar } from 'expo-status-bar'
 import { SafeAreaView } from 'react-native'
 import { Expense } from './src/types'
 import { COLORS } from './src/constants'
-import { initDatabase, getAllExpenses, insertExpense } from './src/db/database'
+import { initDatabase, getAllExpenses, insertExpense, updateExpense, deleteExpense } from './src/db/database'
 import { DashboardScreen } from './src/screens/DashboardScreen'
-import { AddExpenseScreen } from './src/screens/AddExpenseScreen'
+import { ExpenseFormScreen } from './src/screens/ExpenseFormScreen'
 
 export default function App() {
-  const [screen, setScreen] = useState<'dashboard' | 'add'>('dashboard')
+  const [screen, setScreen] = useState<'dashboard' | 'form'>('dashboard')
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
+  // null = formulário em modo "adicionar"; com valor = modo "editar"
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
 
-  // Ao abrir o app: garante que a tabela existe e carrega os
-  // gastos já salvos no dispositivo (persistem entre sessões).
   useEffect(() => {
     initDatabase()
     setExpenses(getAllExpenses())
     setLoading(false)
   }, [])
 
-  const addExpense = (e: Expense) => {
-    insertExpense(e) // grava no SQLite local
-    setExpenses(getAllExpenses()) // relê do banco para manter a UI em sincronia
+  const openAddForm = () => {
+    setEditingExpense(null)
+    setScreen('form')
+  }
+
+  const openEditForm = (expense: Expense) => {
+    setEditingExpense(expense)
+    setScreen('form')
+  }
+
+  const handleSave = (expense: Expense) => {
+    if (editingExpense) {
+      updateExpense(expense)
+    } else {
+      insertExpense(expense)
+    }
+    setExpenses(getAllExpenses())
+  }
+
+  const handleDelete = (id: string) => {
+    deleteExpense(id)
+    setExpenses(getAllExpenses())
   }
 
   if (loading) {
@@ -38,9 +57,18 @@ export default function App() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
       {screen === 'dashboard' ? (
-        <DashboardScreen expenses={expenses} onAddExpense={() => setScreen('add')} />
+        <DashboardScreen
+          expenses={expenses}
+          onAddExpense={openAddForm}
+          onEditExpense={openEditForm}
+          onDeleteExpense={handleDelete}
+        />
       ) : (
-        <AddExpenseScreen onAdd={addExpense} onBack={() => setScreen('dashboard')} />
+        <ExpenseFormScreen
+          initialExpense={editingExpense ?? undefined}
+          onSave={handleSave}
+          onBack={() => setScreen('dashboard')}
+        />
       )}
     </SafeAreaView>
   )
