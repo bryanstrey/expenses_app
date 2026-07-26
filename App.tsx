@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import { View, StyleSheet, ActivityIndicator, SafeAreaView } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
+import type { Session } from '@supabase/supabase-js'
 import { Expense, Trip } from './src/types'
 import { COLORS } from './src/constants'
+import { supabase } from './src/lib/supabase'
 import {
-  initDatabase,
   getAllTrips,
   insertTrip,
   getAllExpenses,
   insertExpense,
   updateExpense,
   deleteExpense,
-} from './src/db/database'
+} from './src/db/api'
+import { AuthScreen } from './src/screens/AuthScreen'
 import { TripsScreen } from './src/screens/TripsScreen'
 import { AddTripScreen } from './src/screens/AddTripScreen'
 import { DashboardScreen } from './src/screens/DashboardScreen'
@@ -24,44 +26,84 @@ type Screen =
   | { type: 'expense-form'; tripId: string; expense?: Expense }
 
 export default function App() {
+  const [session, setSession] = useState<Session | null>(null)
+  const [authLoading, setAuthLoading] = useState(true)
+
   const [screen, setScreen] = useState<Screen>({ type: 'trips' })
   const [trips, setTrips] = useState<Trip[]>([])
   const [expenses, setExpenses] = useState<Expense[]>([])
-  const [loading, setLoading] = useState(true)
+  const [dataLoading, setDataLoading] = useState(true)
 
+  // Observa o estado de login (fica de olho em login/logout/expiração de sessão)
   useEffect(() => {
-    initDatabase()
-    setTrips(getAllTrips())
-    setExpenses(getAllExpenses())
-    setLoading(false)
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session)
+      setAuthLoading(false)
+    })
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession)
+      setScreen({ type: 'trips' })
+    })
+
+    return () => listener.subscription.unsubscribe()
   }, [])
 
-  const refresh = () => {
-    setTrips(getAllTrips())
-    setExpenses(getAllExpenses())
+  // Carrega os dados da nuvem assim que o usuário loga
+  useEffect(() => {
+    if (!session) return
+    setDataLoading(true)
+    refresh().finally(() => setDataLoading(false))
+  }, [session])
+
+  const refresh = async () => {
+    const [tripsData, expensesData] = await Promise.all([getAllTrips(), getAllExpenses()])
+    setTrips(tripsData)
+    setExpenses(expensesData)
   }
 
-  const handleAddTrip = (trip: Trip) => {
-    insertTrip(trip)
-    refresh()
+  const handleAddTrip = async (trip: Trip) => {
+    await insertTrip(trip)
+    await refresh()
     setScreen({ type: 'dashboard', tripId: trip.id })
   }
 
-  const handleSaveExpense = (expense: Expense, isEditing: boolean) => {
+  const handleSaveExpense = async (expense: Expense, isEditing: boolean) => {
     if (isEditing) {
-      updateExpense(expense)
+      await updateExpense(expense)
     } else {
-      insertExpense(expense)
+      await insertExpense(expense)
     }
-    refresh()
+    await refresh()
   }
 
-  const handleDeleteExpense = (id: string) => {
-    deleteExpense(id)
-    refresh()
+  const handleDeleteExpense = async (id: string) => {
+    await deleteExpense(id)
+    await refresh()
   }
 
-  if (loading) {
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+  }
+
+  if (authLoading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator color={COLORS.tealMain} size="large" />
+      </View>
+    )
+  }
+
+  if (!session) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar style="dark" />
+        <AuthScreen />
+      </SafeAreaView>
+    )
+  }
+
+  if (dataLoading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator color={COLORS.tealMain} size="large" />
@@ -74,7 +116,7 @@ export default function App() {
       ? trips.find(t => t.id === screen.tripId) ?? null
       : null
 
-  const tripExpenses = activeTrip ? getExpensesByTripFromState(expenses, activeTrip.id) : []
+  const tripExpenses = activeTrip ? expenses.filter(e => e.tripId === activeTrip.id) : []
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -86,6 +128,7 @@ export default function App() {
           expenses={expenses}
           onSelectTrip={id => setScreen({ type: 'dashboard', tripId: id })}
           onAddTrip={() => setScreen({ type: 'add-trip' })}
+          onLogout={handleLogout}
         />
       )}
 
@@ -117,12 +160,6 @@ export default function App() {
       )}
     </SafeAreaView>
   )
-}
-
-// Filtra os gastos da viagem ativa a partir do estado em memória
-// (evita ir ao banco de novo só pra filtrar por tripId).
-function getExpensesByTripFromState(expenses: Expense[], tripId: string): Expense[] {
-  return expenses.filter(e => e.tripId === tripId)
 }
 
 const styles = StyleSheet.create({

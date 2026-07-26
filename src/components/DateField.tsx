@@ -4,14 +4,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import { COLORS } from '../constants'
 import { dateToISO, fmtDateBR, isoToDate } from '../utils'
 
-/**
- * Campo de data que abre o calendário nativo do celular (Android/iOS)
- * dentro de um modal centralizado — assim ele nunca fica espremido ou
- * cortado, mesmo quando o campo está numa coluna estreita (ex: dois
- * campos "De" / "Até" lado a lado). Exibe sempre no formato brasileiro
- * (DD/MM/AAAA), mas guarda por baixo como ISO (AAAA-MM-DD), que é o
- * formato salvo no banco.
- */
+
 export function DateField({
   label,
   value,

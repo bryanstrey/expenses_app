@@ -10,11 +10,13 @@ export function TripsScreen({
   expenses,
   onSelectTrip,
   onAddTrip,
+  onLogout,
 }: {
   trips: Trip[]
   expenses: Expense[]
   onSelectTrip: (id: string) => void
   onAddTrip: () => void
+  onLogout: () => void
 }) {
   const totalAll = expenses.reduce((s, e) => s + e.amount, 0)
 
@@ -24,8 +26,15 @@ export function TripsScreen({
       <LinearGradient colors={[COLORS.tealMain, COLORS.tealDark]} style={styles.header}>
         <View style={[styles.circle, { top: -40, right: -20, width: 140, height: 140 }]} />
         <View style={[styles.circle, { bottom: 10, left: '30%', width: 60, height: 60 }]} />
-        <Text style={styles.eyebrow}>BOM DIA, VIAJANTE ✈️</Text>
-        <Text style={styles.title}>Minhas Viagens</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <View>
+            <Text style={styles.eyebrow}>BOM DIA, VIAJANTE ✈️</Text>
+            <Text style={styles.title}>Minhas Viagens</Text>
+          </View>
+          <TouchableOpacity onPress={onLogout} style={styles.logoutBtn}>
+            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: '600' }}>Sair</Text>
+          </TouchableOpacity>
+        </View>
         <View style={{ flexDirection: 'row', gap: 16 }}>
           <View style={[styles.statBox, { flex: 1 }]}>
             <Text style={styles.statLabel}>VIAGENS</Text>
@@ -114,6 +123,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   circle: { position: 'absolute', borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.04)' },
+  logoutBtn: {
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+  },
   eyebrow: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '600', letterSpacing: 0.5, marginBottom: 4 },
   title: { color: '#FFFFFF', fontSize: 30, fontWeight: '400', marginBottom: 16 },
   statBox: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 16 },
