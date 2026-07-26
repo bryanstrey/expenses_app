@@ -12,7 +12,8 @@ import {
 import { LinearGradient } from 'expo-linear-gradient'
 import { Category, Expense } from '../types'
 import { CATEGORIES, CATEGORY_META, COLORS } from '../constants'
-import { fmt, fmtDate, todayISO, uid } from '../utils'
+import { fmt, fmtDateBR, todayISO, uid } from '../utils'
+import { DateField } from '../components/DateField'
 
 export function ExpenseFormScreen({
   tripId,
@@ -42,7 +43,6 @@ export function ExpenseFormScreen({
     if (category === 'Outro' && !customCategory.trim()) e.customCategory = 'Informe o nome da categoria'
     const parsedAmount = parseFloat(amount.replace(',', '.'))
     if (!amount || isNaN(parsedAmount) || parsedAmount <= 0) e.amount = 'Informe um valor válido'
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) e.date = 'Use o formato AAAA-MM-DD'
     return e
   }
 
@@ -177,17 +177,15 @@ export function ExpenseFormScreen({
 
         {/* Data */}
         <View style={{ marginBottom: 28 }}>
-          <Text style={styles.fieldLabel}>DATA (AAAA-MM-DD)</Text>
-          <TextInput
-            placeholder="2025-07-15"
+          <DateField
+            label="DATA DO GASTO"
             value={date}
-            onChangeText={t => {
+            onChange={t => {
               setDate(t)
               setErrors(p => ({ ...p, date: '' }))
             }}
-            style={[styles.input, errors.date && styles.inputError]}
+            error={errors.date}
           />
-          {errors.date ? <Text style={styles.errorText}>{errors.date}</Text> : null}
         </View>
 
         {/* Prévia */}
@@ -199,7 +197,7 @@ export function ExpenseFormScreen({
               <View style={{ flex: 1 }}>
                 <Text style={{ fontWeight: '600', fontSize: 14, color: COLORS.textPrimary }}>{name || '—'}</Text>
                 <Text style={{ fontSize: 12, color: COLORS.textMuted }}>
-                  {(category === 'Outro' && customCategory ? customCategory : category)} · {date ? fmtDate(date) : '—'}
+                  {(category === 'Outro' && customCategory ? customCategory : category)} · {date ? fmtDateBR(date) : '—'}
                 </Text>
               </View>
               <Text style={{ fontWeight: '700', fontSize: 16, color: meta.color }}>

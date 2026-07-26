@@ -2,7 +2,7 @@ import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native'
 import { Expense } from '../types'
 import { CATEGORY_META, COLORS } from '../constants'
-import { fmt, fmtDate } from '../utils'
+import { fmt, fmtDateBR } from '../utils'
 
 function expenseLabel(expense: Expense) {
   return expense.category === 'Outro' && expense.customCategory
@@ -40,7 +40,7 @@ export function ExpenseCard({
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.name} numberOfLines={1}>{expense.name}</Text>
-        <Text style={styles.date}>{fmtDate(expense.date)}</Text>
+        <Text style={styles.date}>{fmtDateBR(expense.date)}</Text>
       </View>
       <View style={{ alignItems: 'flex-end' }}>
         <Text style={styles.amount}>{fmt(expense.amount)}</Text>

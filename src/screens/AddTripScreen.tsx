@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { Trip } from '../types'
 import { COLORS, TRIP_EMOJIS, TRIP_GRADIENTS } from '../constants'
 import { uid, todayISO } from '../utils'
+import { DateField } from '../components/DateField'
 
 export function AddTripScreen({
   onSave,
@@ -34,8 +35,7 @@ export function AddTripScreen({
     const e: Record<string, string> = {}
     if (!name.trim()) e.name = 'Informe o nome da viagem'
     if (!destination.trim()) e.destination = 'Informe o destino'
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate)) e.startDate = 'Use o formato AAAA-MM-DD'
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(endDate)) e.endDate = 'Use o formato AAAA-MM-DD'
+    if (endDate < startDate) e.endDate = 'A data final não pode ser antes da inicial'
     return e
   }
 
@@ -160,30 +160,26 @@ export function AddTripScreen({
         {/* Datas */}
         <View style={{ flexDirection: 'row', gap: 12, marginBottom: 18 }}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.fieldLabel}>INÍCIO (AAAA-MM-DD)</Text>
-            <TextInput
-              placeholder="2025-07-10"
+            <DateField
+              label="INÍCIO"
               value={startDate}
-              onChangeText={t => {
+              onChange={t => {
                 setStartDate(t)
                 setErrors(p => ({ ...p, startDate: '' }))
               }}
-              style={[styles.input, errors.startDate && styles.inputError]}
+              error={errors.startDate}
             />
-            {errors.startDate ? <Text style={styles.errorText}>{errors.startDate}</Text> : null}
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.fieldLabel}>FIM (AAAA-MM-DD)</Text>
-            <TextInput
-              placeholder="2025-07-18"
+            <DateField
+              label="FIM"
               value={endDate}
-              onChangeText={t => {
+              onChange={t => {
                 setEndDate(t)
                 setErrors(p => ({ ...p, endDate: '' }))
               }}
-              style={[styles.input, errors.endDate && styles.inputError]}
+              error={errors.endDate}
             />
-            {errors.endDate ? <Text style={styles.errorText}>{errors.endDate}</Text> : null}
           </View>
         </View>
       </ScrollView>

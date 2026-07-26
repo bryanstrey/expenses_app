@@ -2,10 +2,11 @@ import React, { useState } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput } from 'react-native'
 import { Category, Expense, Trip } from '../types'
 import { CATEGORIES, CATEGORY_META, COLORS } from '../constants'
-import { fmt, fmtDate } from '../utils'
+import { fmt, fmtDateBR } from '../utils'
 import { TotalBanner } from '../components/TotalBanner'
 import { CategoryPill } from '../components/CategoryPill'
 import { ExpenseCard } from '../components/ExpenseCard'
+import { DateField } from '../components/DateField'
 
 export function DashboardScreen({
   trip,
@@ -65,9 +66,9 @@ export function DashboardScreen({
     .sort((a, b) => b.total - a.total)
 
   const dateFilterLabel = (() => {
-    if (appliedFrom && appliedTo) return `${fmtDate(appliedFrom)} → ${fmtDate(appliedTo)}`
-    if (appliedFrom) return `A partir de ${fmtDate(appliedFrom)}`
-    if (appliedTo) return `Até ${fmtDate(appliedTo)}`
+    if (appliedFrom && appliedTo) return `${fmtDateBR(appliedFrom)} → ${fmtDateBR(appliedTo)}`
+    if (appliedFrom) return `A partir de ${fmtDateBR(appliedFrom)}`
+    if (appliedTo) return `Até ${fmtDateBR(appliedTo)}`
     return ''
   })()
 
@@ -116,12 +117,10 @@ export function DashboardScreen({
           </View>
           <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.smallLabel}>DE (AAAA-MM-DD)</Text>
-              <TextInput value={draftFrom} onChangeText={setDraftFrom} placeholder="2025-07-01" style={styles.dateInput} />
+              <DateField label="DE" value={draftFrom} onChange={setDraftFrom} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.smallLabel}>ATÉ (AAAA-MM-DD)</Text>
-              <TextInput value={draftTo} onChangeText={setDraftTo} placeholder="2025-07-20" style={styles.dateInput} />
+              <DateField label="ATÉ" value={draftTo} onChange={setDraftTo} />
             </View>
           </View>
           <TouchableOpacity onPress={applyDateFilter} style={styles.applyBtn}>
