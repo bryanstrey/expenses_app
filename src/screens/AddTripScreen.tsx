@@ -81,7 +81,7 @@ export function AddTripScreen({
       <LinearGradient colors={[gradFrom, gradTo]} style={styles.header}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-            <Text style={{ color: '#fff', fontSize: 18 }}>←</Text>
+          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>←</Text>
           </TouchableOpacity>
           <Text style={styles.headerEyebrow}>NOVA VIAGEM</Text>
         </View>
@@ -218,7 +218,7 @@ export function AddTripScreen({
 const styles = StyleSheet.create({
   header: { paddingTop: 24, paddingHorizontal: 20, paddingBottom: 28, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
   headerTop: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
-  backBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' },
+  backBtn: { width: 42, height: 42, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.22)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.35)', alignItems: 'center', justifyContent: 'center' },
   headerEyebrow: { color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '500', letterSpacing: 0.5 },
   headerTitle: { color: '#FFFFFF', fontSize: 26, fontWeight: '400' },
   headerSubtitle: { color: 'rgba(255,255,255,0.5)', fontSize: 13 },

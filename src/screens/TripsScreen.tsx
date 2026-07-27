@@ -4,14 +4,17 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { Expense, Trip } from '../types'
 import { COLORS } from '../constants'
 import { fmt, fmtDateShort } from '../utils'
+import { BottomNavBar } from '../components/BottomNavBar'
 
 export function TripsScreen({
+  userName,
   trips,
   expenses,
   onSelectTrip,
   onAddTrip,
   onLogout,
 }: {
+  userName?: string
   trips: Trip[]
   expenses: Expense[]
   onSelectTrip: (id: string) => void
@@ -26,14 +29,9 @@ export function TripsScreen({
       <LinearGradient colors={[COLORS.tealMain, COLORS.tealDark]} style={styles.header}>
         <View style={[styles.circle, { top: -40, right: -20, width: 140, height: 140 }]} />
         <View style={[styles.circle, { bottom: 10, left: '30%', width: 60, height: 60 }]} />
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <View>
-            <Text style={styles.eyebrow}>BOM DIA, VIAJANTE ✈️</Text>
-            <Text style={styles.title}>Minhas Viagens</Text>
-          </View>
-          <TouchableOpacity onPress={onLogout} style={styles.logoutBtn}>
-            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: '600' }}>Sair</Text>
-          </TouchableOpacity>
+        <View>
+          <Text style={styles.eyebrow}>{userName ? `OLÁ, ${userName.toUpperCase()} ✈️` : 'BOM DIA, VIAJANTE ✈️'}</Text>
+          <Text style={styles.title}>Minhas Viagens</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 16 }}>
           <View style={[styles.statBox, { flex: 1 }]}>
@@ -48,7 +46,7 @@ export function TripsScreen({
       </LinearGradient>
 
       {/* Lista de viagens */}
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 110 }}>
         {trips.length === 0 ? (
           <View style={{ alignItems: 'center', paddingVertical: 60 }}>
             <Text style={{ fontSize: 40, marginBottom: 12 }}>🌍</Text>
@@ -105,10 +103,7 @@ export function TripsScreen({
         )}
       </ScrollView>
 
-      {/* FAB */}
-      <TouchableOpacity onPress={onAddTrip} activeOpacity={0.85} style={styles.fab}>
-        <Text style={{ color: '#FFFFFF', fontSize: 26, lineHeight: 28 }}>+</Text>
-      </TouchableOpacity>
+      <BottomNavBar onHome={() => {}} onAdd={onAddTrip} onLogout={onLogout} homeActive />
     </View>
   )
 }
@@ -123,12 +118,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   circle: { position: 'absolute', borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.04)' },
-  logoutBtn: {
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-  },
   eyebrow: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '600', letterSpacing: 0.5, marginBottom: 4 },
   title: { color: '#FFFFFF', fontSize: 30, fontWeight: '400', marginBottom: 16 },
   statBox: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 16 },
@@ -163,20 +152,4 @@ const styles = StyleSheet.create({
   },
   tripExpenseCount: { fontSize: 13, color: COLORS.textMuted },
   tripSeeMore: { fontSize: 12, fontWeight: '600' },
-  fab: {
-    position: 'absolute',
-    bottom: 28,
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-    backgroundColor: '#D4714A',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#D4714A',
-    shadowOpacity: 0.45,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
-  },
 })

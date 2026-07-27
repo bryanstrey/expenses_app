@@ -12,21 +12,20 @@ import {
 import { LinearGradient } from 'expo-linear-gradient'
 import { COLORS } from '../constants'
 import { supabase } from '../lib/supabase'
+import { nameToLoginEmail, slugifyUsername } from '../utils'
 
 export function AuthScreen() {
   const [mode, setMode] = useState<'login' | 'signup'>('login')
-  const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [info, setInfo] = useState('')
 
   const handleSubmit = async () => {
     setError('')
-    setInfo('')
 
-    if (!email.trim() || !password) {
-      setError('Preencha email e senha')
+    if (slugifyUsername(name).length < 2) {
+      setError('Digite um nome com pelo menos 2 letras')
       return
     }
     if (password.length < 6) {
@@ -34,23 +33,24 @@ export function AuthScreen() {
       return
     }
 
+    const email = nameToLoginEmail(name)
+
     setLoading(true)
     try {
       if (mode === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        })
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
         // Sucesso: o listener onAuthStateChange no App.tsx já cuida
         // de trocar de tela sozinho.
       } else {
         const { error } = await supabase.auth.signUp({
-          email: email.trim(),
+          email,
           password,
+          options: { data: { name: name.trim() } },
         })
         if (error) throw error
-        setInfo('Conta criada! Verifique seu email para confirmar antes de entrar.')
+        // Sem confirmação de email (é um email interno, não existe de
+        // verdade) — o login já libera na hora.
       }
     } catch (e: any) {
       setError(traduzErro(e?.message ?? 'Algo deu errado, tente novamente'))
@@ -71,13 +71,12 @@ export function AuthScreen() {
 
       <View style={styles.form}>
         <View style={{ marginBottom: 16 }}>
-          <Text style={styles.label}>EMAIL</Text>
+          <Text style={styles.label}>NOME</Text>
           <TextInput
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Digite seu email"
-            autoCapitalize="none"
-            keyboardType="email-address"
+            value={name}
+            onChangeText={setName}
+            placeholder="Seu nome"
+            autoCapitalize="words"
             style={styles.input}
           />
         </View>
@@ -87,14 +86,13 @@ export function AuthScreen() {
           <TextInput
             value={password}
             onChangeText={setPassword}
-            placeholder="Digite sua senha"
+            placeholder="Mínimo 6 caracteres"
             secureTextEntry
             style={styles.input}
           />
         </View>
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
-        {info ? <Text style={styles.infoText}>{info}</Text> : null}
 
         <TouchableOpacity onPress={handleSubmit} disabled={loading} style={{ marginTop: 16 }}>
           <LinearGradient colors={[COLORS.tealMain, COLORS.tealDark]} style={styles.submitBtn}>
@@ -110,7 +108,6 @@ export function AuthScreen() {
           onPress={() => {
             setMode(m => (m === 'login' ? 'signup' : 'login'))
             setError('')
-            setInfo('')
           }}
           style={{ marginTop: 18, alignItems: 'center' }}
         >
@@ -128,9 +125,10 @@ export function AuthScreen() {
 
 /** Traduz as mensagens de erro mais comuns do Supabase pro português. */
 function traduzErro(msg: string): string {
-  if (/invalid login credentials/i.test(msg)) return 'Email ou senha incorretos'
-  if (/user already registered/i.test(msg)) return 'Já existe uma conta com esse email'
-  if (/email not confirmed/i.test(msg)) return 'Confirme seu email antes de entrar (verifique sua caixa de entrada)'
+  if (/invalid login credentials/i.test(msg)) return 'Nome ou senha incorretos'
+  if (/user already registered/i.test(msg)) return 'Já existe uma conta com esse nome — escolha outro'
+  if (/email not confirmed/i.test(msg))
+    return 'A confirmação de email precisa estar desativada no Supabase (Authentication → Providers → Email → Confirm email: desligado)'
   return msg
 }
 
@@ -159,7 +157,6 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
   },
   errorText: { color: COLORS.error, fontSize: 13, marginTop: 8, textAlign: 'center' },
-  infoText: { color: COLORS.tealMain, fontSize: 13, marginTop: 8, textAlign: 'center' },
   submitBtn: { width: '100%', paddingVertical: 16, borderRadius: 16, alignItems: 'center' },
   submitText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
 })
