@@ -4,6 +4,7 @@ import { Category, Expense, Trip } from '../types'
 import { CATEGORIES, CATEGORY_META, COLORS } from '../constants'
 import { fmt, fmtDateBR } from '../utils'
 import { TotalBanner } from '../components/TotalBanner'
+import { BottomNavBar } from '../components/BottomNavBar'
 import { CategoryPill } from '../components/CategoryPill'
 import { ExpenseCard } from '../components/ExpenseCard'
 import { DateField } from '../components/DateField'
@@ -15,6 +16,7 @@ export function DashboardScreen({
   onEditExpense,
   onDeleteExpense,
   onBack,
+  onLogout,
 }: {
   trip: Trip
   expenses: Expense[]
@@ -22,6 +24,7 @@ export function DashboardScreen({
   onEditExpense: (expense: Expense) => void
   onDeleteExpense: (id: string) => void
   onBack: () => void
+  onLogout: () => void
 }) {
   const [activeFilter, setActiveFilter] = useState<Category | 'Todos'>('Todos')
 
@@ -74,7 +77,7 @@ export function DashboardScreen({
 
   return (
     <View style={{ flex: 1 }}>
-      <TotalBanner trip={trip} total={total} count={dateFiltered.length} dateLabel={dateFilterLabel} onBack={onBack} />
+      <TotalBanner trip={trip} total={total} count={dateFiltered.length} dateLabel={dateFilterLabel} />
 
       {/* Filtros */}
       <View style={styles.filterRow}>
@@ -140,7 +143,7 @@ export function DashboardScreen({
       )}
 
       {/* Conteúdo */}
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingTop: 4, paddingBottom: 100 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingTop: 4, paddingBottom: 140 }}>
         {activeFilter === 'Todos' && categoryTotals.length > 0 && (
           <View style={{ marginBottom: 24 }}>
             <Text style={styles.sectionLabel}>POR CATEGORIA</Text>
@@ -201,10 +204,7 @@ export function DashboardScreen({
         </View>
       </ScrollView>
 
-      {/* FAB */}
-      <TouchableOpacity onPress={onAddExpense} activeOpacity={0.85} style={styles.fab}>
-        <Text style={{ color: '#FFFFFF', fontSize: 26, lineHeight: 28 }}>+</Text>
-      </TouchableOpacity>
+      <BottomNavBar onHome={onBack} onAdd={onAddExpense} onLogout={onLogout} />
     </View>
   )
 }
@@ -224,20 +224,4 @@ const styles = StyleSheet.create({
   catIconBox: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   progressTrack: { height: 3, backgroundColor: '#F0ECE7', borderRadius: 2, overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: 2 },
-  fab: {
-    position: 'absolute',
-    bottom: 28,
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-    backgroundColor: '#D4714A',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#D4714A',
-    shadowOpacity: 0.45,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
-  },
 })

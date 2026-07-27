@@ -12,7 +12,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient'
 import { Category, Expense } from '../types'
 import { CATEGORIES, CATEGORY_META, COLORS } from '../constants'
-import { fmt, fmtDateBR, todayISO, uid } from '../utils'
+import { centsToDisplay, centsToNumber, fmt, fmtDateBR, numberToCents, todayISO, uid } from '../utils'
 import { DateField } from '../components/DateField'
 
 export function ExpenseFormScreen({
@@ -32,7 +32,7 @@ export function ExpenseFormScreen({
   const [name, setName] = useState(initialExpense?.name ?? '')
   const [category, setCategory] = useState<Category>(initialExpense?.category ?? 'Alimentação')
   const [customCategory, setCustomCategory] = useState(initialExpense?.customCategory ?? '')
-  const [amount, setAmount] = useState(initialExpense ? String(initialExpense.amount) : '')
+  const [amountDigits, setAmountDigits] = useState(initialExpense ? numberToCents(initialExpense.amount) : '')
   const [date, setDate] = useState(initialExpense?.date ?? todayISO())
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitted, setSubmitted] = useState(false)
@@ -42,8 +42,8 @@ export function ExpenseFormScreen({
     const e: Record<string, string> = {}
     if (!name.trim()) e.name = 'Informe o nome do gasto'
     if (category === 'Outro' && !customCategory.trim()) e.customCategory = 'Informe o nome da categoria'
-    const parsedAmount = parseFloat(amount.replace(',', '.'))
-    if (!amount || isNaN(parsedAmount) || parsedAmount <= 0) e.amount = 'Informe um valor válido'
+    const parsedAmount = centsToNumber(amountDigits)
+    if (!amountDigits || isNaN(parsedAmount) || parsedAmount <= 0) e.amount = 'Informe um valor válido'
     return e
   }
 
@@ -61,7 +61,7 @@ export function ExpenseFormScreen({
         name: name.trim(),
         category,
         customCategory: category === 'Outro' && customCategory.trim() ? customCategory.trim() : undefined,
-        amount: parseFloat(amount.replace(',', '.')),
+        amount: centsToNumber(amountDigits),
         date,
       })
       setSubmitted(true)
@@ -87,7 +87,7 @@ export function ExpenseFormScreen({
       <LinearGradient colors={[COLORS.tealMain, COLORS.tealDark]} style={styles.header}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-            <Text style={{ color: '#fff', fontSize: 18 }}>←</Text>
+            <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>←</Text>
           </TouchableOpacity>
           <Text style={styles.headerEyebrow}>{isEditing ? 'EDITAR GASTO' : 'NOVO GASTO'}</Text>
         </View>
@@ -171,12 +171,12 @@ export function ExpenseFormScreen({
             <Text style={[styles.currencyPrefix, { color: meta.color }]}>R$</Text>
             <TextInput
               placeholder="0,00"
-              value={amount}
+              value={centsToDisplay(amountDigits)}
               onChangeText={t => {
-                setAmount(t)
+                setAmountDigits(t.replace(/\D/g, ''))
                 setErrors(p => ({ ...p, amount: '' }))
               }}
-              keyboardType="decimal-pad"
+              keyboardType="number-pad"
               style={[styles.input, { paddingLeft: 48 }, errors.amount && styles.inputError]}
             />
           </View>
@@ -197,7 +197,7 @@ export function ExpenseFormScreen({
         </View>
 
         {/* Prévia */}
-        {name && amount ? (
+        {name && amountDigits ? (
           <View style={[styles.previewBox, { backgroundColor: meta.light }]}>
             <Text style={[styles.fieldLabel, { color: meta.color, marginBottom: 8 }]}>PRÉVIA</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -209,7 +209,7 @@ export function ExpenseFormScreen({
                 </Text>
               </View>
               <Text style={{ fontWeight: '700', fontSize: 16, color: meta.color }}>
-                {amount ? fmt(parseFloat(amount.replace(',', '.')) || 0) : '—'}
+                {fmt(centsToNumber(amountDigits))}
               </Text>
             </View>
           </View>
@@ -246,7 +246,7 @@ export function ExpenseFormScreen({
 const styles = StyleSheet.create({
   header: { paddingTop: 24, paddingHorizontal: 20, paddingBottom: 28, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
   headerTop: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
-  backBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' },
+  backBtn: { width: 42, height: 42, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.22)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.35)', alignItems: 'center', justifyContent: 'center' },
   headerEyebrow: { color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '500', letterSpacing: 0.5 },
   headerTitle: { color: '#FFFFFF', fontSize: 28, fontWeight: '400' },
   headerSubtitle: { color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 6 },

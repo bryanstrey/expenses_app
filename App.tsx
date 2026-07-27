@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { View, StyleSheet, ActivityIndicator, SafeAreaView } from 'react-native'
+import { View, StyleSheet, ActivityIndicator, SafeAreaView, Platform } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
+import * as NavigationBar from 'expo-navigation-bar'
 import type { Session } from '@supabase/supabase-js'
 import { Expense, Trip } from './src/types'
 import { COLORS } from './src/constants'
@@ -47,6 +48,28 @@ export default function App() {
     })
 
     return () => listener.subscription.unsubscribe()
+  }, [])
+
+  // Esconde a barra de navegação do Android (modo imersivo). Um gesto
+  // vindo da borda de baixo mostra ela de novo por instantes, depois
+  // some sozinha. iOS não tem esse conceito, então só roda no Android.
+  useEffect(() => {
+    if (Platform.OS !== 'android') return
+    ;(async () => {
+      try {
+        const nav = NavigationBar as any
+        if (typeof nav.setHidden === 'function') {
+          // Versões mais novas da lib (API simplificada)
+          nav.setHidden(true)
+        } else {
+          // Versões mais antigas da lib
+          await nav.setBehaviorAsync?.('inset-swipe')
+          await nav.setVisibilityAsync?.('hidden')
+        }
+      } catch {
+        // Alguns emuladores/dispositivos não suportam — ignora silenciosamente
+      }
+    })()
   }, [])
 
   // Carrega os dados da nuvem assim que o usuário loga
@@ -123,6 +146,7 @@ export default function App() {
 
       {screen.type === 'trips' && (
         <TripsScreen
+          userName={session.user.user_metadata?.name as string | undefined}
           trips={trips}
           expenses={expenses}
           onSelectTrip={id => setScreen({ type: 'dashboard', tripId: id })}
@@ -147,6 +171,7 @@ export default function App() {
           onEditExpense={expense => setScreen({ type: 'expense-form', tripId: activeTrip.id, expense })}
           onDeleteExpense={handleDeleteExpense}
           onBack={() => setScreen({ type: 'trips' })}
+          onLogout={handleLogout}
         />
       )}
 
