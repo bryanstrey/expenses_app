@@ -5,7 +5,10 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
     "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
       "backgroundColor": "#F0ECE7"
     },
     "ios": {
@@ -15,6 +18,7 @@
     "android": {
       "package": "com.suaempresa.gastosdeviagem",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#F0ECE7"
       }
     },
