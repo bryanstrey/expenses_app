@@ -14,7 +14,14 @@ export const fmtDateShort = (iso: string) => {
   return `${d} ${months[parseInt(m, 10) - 1]}`
 }
 
-export const uid = () => Math.random().toString(36).slice(2, 10)
+/** Gera um UUID v4 válido (formato exigido pelas colunas `uuid` do Supabase). */
+export const uid = (): string => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, char => {
+    const r = (Math.random() * 16) | 0
+    const v = char === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
 
 export const todayISO = () => new Date().toISOString().split('T')[0]
 

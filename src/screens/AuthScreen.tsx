@@ -75,7 +75,7 @@ export function AuthScreen() {
           <TextInput
             value={email}
             onChangeText={setEmail}
-            placeholder="voce@email.com"
+            placeholder="Digite seu email"
             autoCapitalize="none"
             keyboardType="email-address"
             style={styles.input}
@@ -87,7 +87,7 @@ export function AuthScreen() {
           <TextInput
             value={password}
             onChangeText={setPassword}
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Digite sua senha"
             secureTextEntry
             style={styles.input}
           />

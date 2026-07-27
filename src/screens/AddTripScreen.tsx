@@ -17,9 +17,12 @@ import { DateField } from '../components/DateField'
 
 export function AddTripScreen({
   onSave,
+  onSaved,
   onBack,
 }: {
-  onSave: (trip: Trip) => void
+  onSave: (trip: Trip) => Promise<void>
+  /** Chamado depois que o salvamento terminou com sucesso, com o id da viagem criada. */
+  onSaved: (tripId: string) => void
   onBack: () => void
 }) {
   const [name, setName] = useState('')
@@ -30,6 +33,7 @@ export function AddTripScreen({
   const [gradientIdx, setGradientIdx] = useState(0)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const validate = () => {
     const e: Record<string, string> = {}
@@ -39,27 +43,35 @@ export function AddTripScreen({
     return e
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const e = validate()
     if (Object.keys(e).length > 0) {
       setErrors(e)
       return
     }
-    onSave({
-      id: uid(),
-      name: name.trim(),
-      destination: destination.trim(),
-      startDate,
-      endDate,
-      emoji,
-      gradientFrom: TRIP_GRADIENTS[gradientIdx][0],
-      gradientTo: TRIP_GRADIENTS[gradientIdx][1],
-    })
-    setSaved(true)
-    setTimeout(() => {
-      setSaved(false)
-      onBack()
-    }, 700)
+    setSaving(true)
+    try {
+      const trip: Trip = {
+        id: uid(),
+        name: name.trim(),
+        destination: destination.trim(),
+        startDate,
+        endDate,
+        emoji,
+        gradientFrom: TRIP_GRADIENTS[gradientIdx][0],
+        gradientTo: TRIP_GRADIENTS[gradientIdx][1],
+      }
+      await onSave(trip)
+      setSaved(true)
+      setTimeout(() => {
+        setSaved(false)
+        onSaved(trip.id)
+      }, 700)
+    } catch (err: any) {
+      setErrors({ submit: `Erro ao salvar: ${err?.message ?? 'tente novamente'}` })
+    } finally {
+      setSaving(false)
+    }
   }
 
   const [gradFrom, gradTo] = TRIP_GRADIENTS[gradientIdx]
@@ -185,12 +197,17 @@ export function AddTripScreen({
       </ScrollView>
 
       <View style={styles.submitWrap}>
-        <TouchableOpacity onPress={handleSave} activeOpacity={0.85}>
+        {errors.submit ? (
+          <Text style={[styles.errorText, { textAlign: 'center', marginBottom: 8 }]}>{errors.submit}</Text>
+        ) : null}
+        <TouchableOpacity onPress={handleSave} activeOpacity={0.85} disabled={saving}>
           <LinearGradient
             colors={saved ? ['#3A7A5A', '#3A7A5A'] : [gradFrom, gradTo]}
             style={styles.submitBtn}
           >
-            <Text style={styles.submitText}>{saved ? '✓ Viagem criada!' : 'Criar Viagem'}</Text>
+            <Text style={styles.submitText}>
+              {saved ? '✓ Viagem criada!' : saving ? 'Salvando...' : 'Criar Viagem'}
+            </Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>

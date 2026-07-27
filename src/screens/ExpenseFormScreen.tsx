@@ -24,7 +24,7 @@ export function ExpenseFormScreen({
   tripId: string
   /** Se informado, o formulário abre em modo edição, já preenchido. */
   initialExpense?: Expense
-  onSave: (e: Expense) => void
+  onSave: (e: Expense) => Promise<void>
   onBack: () => void
 }) {
   const isEditing = !!initialExpense
@@ -36,6 +36,7 @@ export function ExpenseFormScreen({
   const [date, setDate] = useState(initialExpense?.date ?? todayISO())
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitted, setSubmitted] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const validate = () => {
     const e: Record<string, string> = {}
@@ -46,26 +47,33 @@ export function ExpenseFormScreen({
     return e
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const e = validate()
     if (Object.keys(e).length > 0) {
       setErrors(e)
       return
     }
-    onSave({
-      id: initialExpense?.id ?? uid(),
-      tripId,
-      name: name.trim(),
-      category,
-      customCategory: category === 'Outro' && customCategory.trim() ? customCategory.trim() : undefined,
-      amount: parseFloat(amount.replace(',', '.')),
-      date,
-    })
-    setSubmitted(true)
-    setTimeout(() => {
-      setSubmitted(false)
-      onBack()
-    }, 700)
+    setSaving(true)
+    try {
+      await onSave({
+        id: initialExpense?.id ?? uid(),
+        tripId,
+        name: name.trim(),
+        category,
+        customCategory: category === 'Outro' && customCategory.trim() ? customCategory.trim() : undefined,
+        amount: parseFloat(amount.replace(',', '.')),
+        date,
+      })
+      setSubmitted(true)
+      setTimeout(() => {
+        setSubmitted(false)
+        onBack()
+      }, 700)
+    } catch (err: any) {
+      setErrors({ submit: `Erro ao salvar: ${err?.message ?? 'tente novamente'}` })
+    } finally {
+      setSaving(false)
+    }
   }
 
   const meta = CATEGORY_META[category]
@@ -209,13 +217,24 @@ export function ExpenseFormScreen({
       </ScrollView>
 
       <View style={styles.submitWrap}>
-        <TouchableOpacity onPress={handleSubmit} activeOpacity={0.85}>
+        {errors.submit ? (
+          <Text style={[styles.errorText, { textAlign: 'center', marginBottom: 8 }]}>{errors.submit}</Text>
+        ) : null}
+        <TouchableOpacity onPress={handleSubmit} activeOpacity={0.85} disabled={saving}>
           <LinearGradient
             colors={submitted ? ['#3A7A5A', '#3A7A5A'] : [COLORS.tealMain, COLORS.tealDark]}
             style={styles.submitBtn}
           >
             <Text style={styles.submitText}>
-              {submitted ? (isEditing ? '✓ Alterações salvas!' : '✓ Gasto adicionado!') : isEditing ? 'Salvar Alterações' : 'Registrar Gasto'}
+              {submitted
+                ? isEditing
+                  ? '✓ Alterações salvas!'
+                  : '✓ Gasto adicionado!'
+                : saving
+                ? 'Salvando...'
+                : isEditing
+                ? 'Salvar Alterações'
+                : 'Registrar Gasto'}
             </Text>
           </LinearGradient>
         </TouchableOpacity>

@@ -65,7 +65,6 @@ export default function App() {
   const handleAddTrip = async (trip: Trip) => {
     await insertTrip(trip)
     await refresh()
-    setScreen({ type: 'dashboard', tripId: trip.id })
   }
 
   const handleSaveExpense = async (expense: Expense, isEditing: boolean) => {
@@ -133,7 +132,11 @@ export default function App() {
       )}
 
       {screen.type === 'add-trip' && (
-        <AddTripScreen onSave={handleAddTrip} onBack={() => setScreen({ type: 'trips' })} />
+        <AddTripScreen
+          onSave={handleAddTrip}
+          onSaved={tripId => setScreen({ type: 'dashboard', tripId })}
+          onBack={() => setScreen({ type: 'trips' })}
+        />
       )}
 
       {screen.type === 'dashboard' && activeTrip && (
@@ -151,10 +154,7 @@ export default function App() {
         <ExpenseFormScreen
           tripId={activeTrip.id}
           initialExpense={screen.expense}
-          onSave={expense => {
-            handleSaveExpense(expense, !!screen.expense)
-            setScreen({ type: 'dashboard', tripId: activeTrip.id })
-          }}
+          onSave={expense => handleSaveExpense(expense, !!screen.expense)}
           onBack={() => setScreen({ type: 'dashboard', tripId: activeTrip.id })}
         />
       )}
