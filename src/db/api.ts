@@ -1,7 +1,13 @@
 import { supabase } from '../lib/supabase'
-import { Expense, Trip } from '../types'
+import { City, Expense, Trip, TouristSpot } from '../types'
 
-// ─── Trips ──
+async function currentUserId(): Promise<string> {
+  const { data, error } = await supabase.auth.getUser()
+  if (error || !data.user) throw error ?? new Error('Usuário não autenticado')
+  return data.user.id
+}
+
+// ─── Trips ──────────────────────────────────────────────────────────────────
 
 type TripRow = {
   id: string
@@ -40,12 +46,11 @@ export async function getAllTrips(): Promise<Trip[]> {
 
 /** Cria uma nova viagem vinculada ao usuário logado. */
 export async function insertTrip(trip: Trip): Promise<void> {
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-  if (userError || !userData.user) throw userError ?? new Error('Usuário não autenticado')
+  const userId = await currentUserId()
 
   const { error } = await supabase.from('trips').insert({
     id: trip.id,
-    user_id: userData.user.id,
+    user_id: userId,
     name: trip.name,
     destination: trip.destination,
     start_date: trip.startDate,
@@ -58,9 +63,58 @@ export async function insertTrip(trip: Trip): Promise<void> {
   if (error) throw error
 }
 
-/** Remove uma viagem (os gastos vinculados somem junto, por causa do "on delete cascade"). */
+/** Remove uma viagem (cidades, gastos e pontos vinculados somem junto, por causa do "on delete cascade"). */
 export async function deleteTrip(id: string): Promise<void> {
   const { error } = await supabase.from('trips').delete().eq('id', id)
+  if (error) throw error
+}
+
+// ─── Cities ─────────────────────────────────────────────────────────────────
+
+type CityRow = {
+  id: string
+  trip_id: string
+  name: string
+}
+
+function rowToCity(row: CityRow): City {
+  return { id: row.id, tripId: row.trip_id, name: row.name }
+}
+
+/** Busca todas as cidades de todas as viagens do usuário logado. */
+export async function getAllCities(): Promise<City[]> {
+  const { data, error } = await supabase
+    .from('cities')
+    .select('*')
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  return (data as CityRow[]).map(rowToCity)
+}
+
+/** Cria uma nova cidade vinculada a uma viagem. */
+export async function insertCity(city: City): Promise<void> {
+  const userId = await currentUserId()
+
+  const { error } = await supabase.from('cities').insert({
+    id: city.id,
+    user_id: userId,
+    trip_id: city.tripId,
+    name: city.name,
+  })
+
+  if (error) throw error
+}
+
+/** Atualiza o nome de uma cidade. */
+export async function updateCity(city: City): Promise<void> {
+  const { error } = await supabase.from('cities').update({ name: city.name }).eq('id', city.id)
+  if (error) throw error
+}
+
+/** Remove uma cidade (gastos e pontos turísticos vinculados somem junto). */
+export async function deleteCity(id: string): Promise<void> {
+  const { error } = await supabase.from('cities').delete().eq('id', id)
   if (error) throw error
 }
 
@@ -69,6 +123,7 @@ export async function deleteTrip(id: string): Promise<void> {
 type ExpenseRow = {
   id: string
   trip_id: string
+  city_id: string | null
   name: string
   category: string
   custom_category: string | null
@@ -80,6 +135,7 @@ function rowToExpense(row: ExpenseRow): Expense {
   return {
     id: row.id,
     tripId: row.trip_id,
+    cityId: row.city_id ?? '',
     name: row.name,
     category: row.category as Expense['category'],
     customCategory: row.custom_category ?? undefined,
@@ -99,15 +155,15 @@ export async function getAllExpenses(): Promise<Expense[]> {
   return (data as ExpenseRow[]).map(rowToExpense)
 }
 
-/** Insere um novo gasto vinculado a uma viagem. */
+/** Insere um novo gasto vinculado a uma viagem e uma cidade. */
 export async function insertExpense(expense: Expense): Promise<void> {
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-  if (userError || !userData.user) throw userError ?? new Error('Usuário não autenticado')
+  const userId = await currentUserId()
 
   const { error } = await supabase.from('expenses').insert({
     id: expense.id,
-    user_id: userData.user.id,
+    user_id: userId,
     trip_id: expense.tripId,
+    city_id: expense.cityId,
     name: expense.name,
     category: expense.category,
     custom_category: expense.customCategory ?? null,
@@ -137,5 +193,75 @@ export async function updateExpense(expense: Expense): Promise<void> {
 /** Remove um gasto pelo id. */
 export async function deleteExpense(id: string): Promise<void> {
   const { error } = await supabase.from('expenses').delete().eq('id', id)
+  if (error) throw error
+}
+
+// ─── Tourist spots ──────────────────────────────────────────────────────────
+
+type SpotRow = {
+  id: string
+  trip_id: string
+  city_id: string
+  name: string
+  description: string
+  visited: boolean
+}
+
+function rowToSpot(row: SpotRow): TouristSpot {
+  return {
+    id: row.id,
+    tripId: row.trip_id,
+    cityId: row.city_id,
+    name: row.name,
+    description: row.description,
+    visited: row.visited,
+  }
+}
+
+/** Busca todos os pontos turísticos de todas as viagens do usuário logado. */
+export async function getAllSpots(): Promise<TouristSpot[]> {
+  const { data, error } = await supabase
+    .from('tourist_spots')
+    .select('*')
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  return (data as SpotRow[]).map(rowToSpot)
+}
+
+/** Cria um novo ponto turístico vinculado a uma cidade. */
+export async function insertSpot(spot: TouristSpot): Promise<void> {
+  const userId = await currentUserId()
+
+  const { error } = await supabase.from('tourist_spots').insert({
+    id: spot.id,
+    user_id: userId,
+    trip_id: spot.tripId,
+    city_id: spot.cityId,
+    name: spot.name,
+    description: spot.description,
+    visited: spot.visited,
+  })
+
+  if (error) throw error
+}
+
+/** Atualiza um ponto turístico existente. */
+export async function updateSpot(spot: TouristSpot): Promise<void> {
+  const { error } = await supabase
+    .from('tourist_spots')
+    .update({
+      name: spot.name,
+      description: spot.description,
+      visited: spot.visited,
+    })
+    .eq('id', spot.id)
+
+  if (error) throw error
+}
+
+/** Remove um ponto turístico pelo id. */
+export async function deleteSpot(id: string): Promise<void> {
+  const { error } = await supabase.from('tourist_spots').delete().eq('id', id)
   if (error) throw error
 }

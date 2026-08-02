@@ -1,30 +1,20 @@
 import React, { useState } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput } from 'react-native'
-import { Category, Expense, Trip } from '../types'
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native'
+import { Category, Expense } from '../types'
 import { CATEGORIES, CATEGORY_META, COLORS } from '../constants'
 import { fmt, fmtDateBR } from '../utils'
-import { TotalBanner } from '../components/TotalBanner'
-import { BottomNavBar } from '../components/BottomNavBar'
-import { CategoryPill } from '../components/CategoryPill'
-import { ExpenseCard } from '../components/ExpenseCard'
-import { DateField } from '../components/DateField'
+import { CategoryPill } from './CategoryPill'
+import { ExpenseCard } from './ExpenseCard'
+import { DateField } from './DateField'
 
-export function DashboardScreen({
-  trip,
+export function ExpensesTab({
   expenses,
-  onAddExpense,
   onEditExpense,
   onDeleteExpense,
-  onBack,
-  onLogout,
 }: {
-  trip: Trip
   expenses: Expense[]
-  onAddExpense: () => void
   onEditExpense: (expense: Expense) => void
   onDeleteExpense: (id: string) => void
-  onBack: () => void
-  onLogout: () => void
 }) {
   const [activeFilter, setActiveFilter] = useState<Category | 'Todos'>('Todos')
 
@@ -77,8 +67,6 @@ export function DashboardScreen({
 
   return (
     <View style={{ flex: 1 }}>
-      <TotalBanner trip={trip} total={total} count={dateFiltered.length} dateLabel={dateFilterLabel} />
-
       {/* Filtros */}
       <View style={styles.filterRow}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1 }}>
@@ -203,8 +191,6 @@ export function DashboardScreen({
           )}
         </View>
       </ScrollView>
-
-      <BottomNavBar onHome={onBack} onAdd={onAddExpense} onLogout={onLogout} />
     </View>
   )
 }
@@ -214,8 +200,6 @@ const styles = StyleSheet.create({
   dateToggle: { width: 36, height: 36, borderRadius: 10, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   dateDot: { position: 'absolute', top: -4, right: -4, width: 10, height: 10, borderRadius: 5, backgroundColor: '#D4714A', borderWidth: 2, borderColor: COLORS.screenBg },
   datePanel: { marginHorizontal: 16, marginBottom: 10, padding: 16, backgroundColor: '#FFFFFF', borderRadius: 18, borderWidth: 1.5, borderColor: COLORS.border },
-  smallLabel: { fontSize: 11, fontWeight: '600', color: COLORS.textMuted, letterSpacing: 0.4, marginBottom: 6 },
-  dateInput: { width: '100%', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1.5, borderColor: COLORS.border, backgroundColor: COLORS.screenBg, fontSize: 13, color: COLORS.textPrimary },
   applyBtn: { width: '100%', paddingVertical: 11, borderRadius: 12, backgroundColor: COLORS.tealMain, alignItems: 'center' },
   activeBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, marginHorizontal: 20, marginBottom: 8, paddingVertical: 6, paddingHorizontal: 12, backgroundColor: '#E8F6EF', borderRadius: 50, alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(27,75,74,0.2)' },
   sectionLabel: { fontSize: 12, fontWeight: '600', color: COLORS.textMuted, letterSpacing: 0.5 },
