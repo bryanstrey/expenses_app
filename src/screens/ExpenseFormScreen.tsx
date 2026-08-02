@@ -17,11 +17,13 @@ import { DateField } from '../components/DateField'
 
 export function ExpenseFormScreen({
   tripId,
+  cityId,
   initialExpense,
   onSave,
   onBack,
 }: {
   tripId: string
+  cityId: string
   /** Se informado, o formulário abre em modo edição, já preenchido. */
   initialExpense?: Expense
   onSave: (e: Expense) => Promise<void>
@@ -58,6 +60,7 @@ export function ExpenseFormScreen({
       await onSave({
         id: initialExpense?.id ?? uid(),
         tripId,
+        cityId,
         name: name.trim(),
         category,
         customCategory: category === 'Outro' && customCategory.trim() ? customCategory.trim() : undefined,

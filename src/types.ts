@@ -19,9 +19,25 @@ export interface Trip {
   gradientTo: string
 }
 
+export interface City {
+  id: string
+  tripId: string
+  name: string
+}
+
+export interface TouristSpot {
+  id: string
+  tripId: string
+  cityId: string
+  name: string
+  description: string
+  visited: boolean
+}
+
 export interface Expense {
   id: string
   tripId: string
+  cityId: string
   name: string
   category: Category
   customCategory?: string

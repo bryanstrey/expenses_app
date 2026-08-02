@@ -81,7 +81,7 @@ export function AddTripScreen({
       <LinearGradient colors={[gradFrom, gradTo]} style={styles.header}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>←</Text>
+            <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>←</Text>
           </TouchableOpacity>
           <Text style={styles.headerEyebrow}>NOVA VIAGEM</Text>
         </View>
