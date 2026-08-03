@@ -38,7 +38,7 @@ type Screen =
   | { type: 'add-city'; tripId: string }
   | { type: 'edit-city'; tripId: string; city: City }
   | { type: 'city-dashboard'; tripId: string; cityId: string; tab: 'expenses' | 'spots' }
-  | { type: 'expense-form'; tripId: string; cityId: string; expense?: Expense }
+  | { type: 'expense-form'; tripId: string; cityId: string; expense?: Expense; from?: 'city' | 'overview' }
   | { type: 'spot-form'; tripId: string; cityId: string; spot?: TouristSpot }
 
 export default function App() {
@@ -232,6 +232,10 @@ export default function App() {
           onAddCity={() => setScreen({ type: 'add-city', tripId: activeTrip.id })}
           onEditCity={city => setScreen({ type: 'edit-city', tripId: activeTrip.id, city })}
           onDeleteCity={handleDeleteCity}
+          onEditExpense={expense =>
+            setScreen({ type: 'expense-form', tripId: activeTrip.id, cityId: expense.cityId, expense, from: 'overview' })
+          }
+          onDeleteExpense={handleDeleteExpense}
           onBack={() => setScreen({ type: 'trips' })}
           onLogout={handleLogout}
         />
@@ -281,7 +285,11 @@ export default function App() {
           cityId={activeCity.id}
           initialExpense={screen.expense}
           onSave={expense => handleSaveExpense(expense, !!screen.expense)}
-          onBack={() => setScreen({ type: 'city-dashboard', tripId: activeTrip.id, cityId: activeCity.id, tab: 'expenses' })}
+          onBack={() =>
+            screen.from === 'overview'
+              ? setScreen({ type: 'trip-overview', tripId: activeTrip.id })
+              : setScreen({ type: 'city-dashboard', tripId: activeTrip.id, cityId: activeCity.id, tab: 'expenses' })
+          }
         />
       )}
 
