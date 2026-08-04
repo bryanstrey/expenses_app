@@ -1,47 +1,52 @@
-# Gastos de Viagem — App Expo/React Native
+# Gastos de Viagem
 
-App convertido do protótipo web original para **React Native com Expo**, com persistência
-local real usando **SQLite** (via `expo-sqlite`) — o equivalente ao Room do Android nativo,
-mas funcionando em Android e iOS a partir do mesmo código JS/TS.
+App de controle de gastos de viagem para Android e iOS, feito em React Native com Expo.
+
+## Sobre o app
+
+O app organiza suas viagens em três níveis:
+
+- **Viagens** — cada viagem tem nome, ícone, cor e datas de início/fim
+- **Cidades** — cada viagem pode ter várias cidades, cada uma com suas próprias datas de chegada e saída
+- **Gastos e Pontos Turísticos** — dentro de cada cidade, você registra os gastos (com categoria, valor e data) e os pontos turísticos que quer visitar (marcando como visitado depois)
+
+Também é possível ver todos os gastos da viagem inteira juntos, filtrando por cidade, categoria ou período.
+
+Os dados ficam salvos na nuvem (Supabase), então dá pra acessar as mesmas viagens de mais de um celular, bastando entrar com o mesmo login. O login é feito só com **nome e senha** — não precisa de email de verdade.
+
+## Dependências necessárias
+
+- **Node.js** (versão 18 ou mais recente)
+- **npm** (vem junto com o Node.js)
+- **App Expo Go** instalado no celular (Android ou iOS) — ou um emulador Android / simulador iOS no computador
+
+Não precisa instalar Android Studio ou Xcode pra rodar em modo desenvolvimento — só pra gerar o instalável (APK) mais pra frente.
 
 ## Como rodar
 
+1. Instale as dependências do projeto:
 ```bash
 npm install
+```
+
+2. Inicie o servidor de desenvolvimento:
+```bash
 npx expo start
 ```
 
-Depois, no terminal do Expo:
-- pressione `a` para abrir no emulador Android
-- pressione `i` para abrir no simulador iOS (precisa de macOS + Xcode)
-- ou escaneie o QR code com o app **Expo Go** no seu celular físico
+3. No terminal que abrir, você pode:
+   - Escanear o **QR code** com o app **Expo Go** no celular (forma mais simples)
+   - Pressionar `a` para abrir num emulador Android
+   - Pressionar `i` para abrir num simulador iOS (precisa de macOS + Xcode)
 
-## Onde fica o banco de dados
-
-Todo o código do banco está em `src/db/database.ts`. Ele:
-
-1. Abre (ou cria) um arquivo `travel_expenses.db` dentro do armazenamento privado do app
-   (isso é feito automaticamente pelo `expo-sqlite`, sem precisar de permissões extras).
-2. Cria a tabela `expenses` na primeira execução (`initDatabase()`).
-3. Expõe funções simples para ler, inserir e apagar gastos — chamadas pelo `App.tsx`.
-
-Os dados **persistem entre aberturas do app** e funcionam **100% offline**, exatamente
-como aconteceria com Room no Android nativo.
-
-## Estrutura do projeto
-
+Se fizer alguma alteração no código e ela não aparecer no app, reinicie com o cache limpo:
+```bash
+npx expo start -c
 ```
-App.tsx                      → tela raiz: inicializa o banco e alterna entre as telas
-src/
-  types.ts                   → tipos (Category, Expense)
-  constants.ts                → categorias, cores, ícones
-  utils.ts                    → formatação de moeda/data, geração de id
-  db/database.ts              → camada de persistência local (SQLite)
-  components/
-    TotalBanner.tsx
-    CategoryPill.tsx
-    ExpenseCard.tsx
-  screens/
-    DashboardScreen.tsx        → lista de gastos, filtros por categoria/data
-    AddExpenseScreen.tsx       → formulário de novo gasto
+
+## Gerando um APK (instalável no Android)
+
+```bash
+eas build -p android --profile preview
 ```
+Isso gera um link pra baixar o `.apk` direto no celular, sem precisar do Expo Go. Requer o `eas-cli` instalado (`npm install -g eas-cli`) e login na Expo (`eas login`).
