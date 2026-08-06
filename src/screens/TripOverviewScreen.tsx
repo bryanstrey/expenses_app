@@ -160,6 +160,11 @@ export function TripOverviewScreen({
                           {cityExpenses.length} {cityExpenses.length === 1 ? 'gasto' : 'gastos'} · {citySpots.length}{' '}
                           {citySpots.length === 1 ? 'ponto' : 'pontos'}
                         </Text>
+                        {city.startDate ? (
+                          <Text style={styles.cityDates}>
+                            {fmtDateShort(city.startDate)} → {fmtDateShort(city.endDate)}
+                          </Text>
+                        ) : null}
                       </View>
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
@@ -237,6 +242,7 @@ const styles = StyleSheet.create({
   cityIconBox: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   cityName: { fontSize: 15, fontWeight: '700', color: COLORS.textPrimary },
   cityMeta: { fontSize: 11, color: COLORS.textMuted },
+  cityDates: { fontSize: 10, color: COLORS.textMuted, marginTop: 1 },
   cityTotal: { fontSize: 17, fontWeight: '700' },
   cityPct: { fontSize: 10, color: COLORS.textMuted },
   cityCardBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#F5F0EB' },

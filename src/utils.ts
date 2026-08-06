@@ -29,11 +29,6 @@ export const fmtDateShort = (iso: string) => {
   return `${d} ${months[parseInt(m, 10) - 1]}`
 }
 
-/**
- * Transforma um nome em um identificador "limpo" (sem acentos, espaços ou
- * símbolos), usado para gerar um email interno de login a partir do nome
- * (o Supabase Auth só entende email por baixo dos panos).
- */
 export const slugifyUsername = (name: string): string =>
   name
     .normalize('NFD')

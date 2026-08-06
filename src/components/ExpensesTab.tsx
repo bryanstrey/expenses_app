@@ -69,7 +69,7 @@ export function ExpensesTab({
     <View style={{ flex: 1 }}>
       {/* Filtros */}
       <View style={styles.filterRow}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1, height: 36 }} contentContainerStyle={{ alignItems: 'center', flexGrow: 0 }}>
           <CategoryPill label="Todos" active={activeFilter === 'Todos'} onPress={() => setActiveFilter('Todos')} />
           {categoryTotals.map(({ cat }) => (
             <CategoryPill

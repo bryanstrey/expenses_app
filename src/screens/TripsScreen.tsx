@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { Expense, Trip } from '../types'
 import { COLORS } from '../constants'
@@ -12,6 +12,8 @@ export function TripsScreen({
   expenses,
   onSelectTrip,
   onAddTrip,
+  onEditTrip,
+  onDeleteTrip,
   onLogout,
 }: {
   userName?: string
@@ -19,9 +21,22 @@ export function TripsScreen({
   expenses: Expense[]
   onSelectTrip: (id: string) => void
   onAddTrip: () => void
+  onEditTrip: (trip: Trip) => void
+  onDeleteTrip: (id: string) => void
   onLogout: () => void
 }) {
   const totalAll = expenses.reduce((s, e) => s + e.amount, 0)
+
+  const confirmDeleteTrip = (trip: Trip) => {
+    Alert.alert(
+      'Excluir viagem',
+      `Tem certeza que deseja excluir "${trip.name}"? Todas as cidades, gastos e pontos turísticos dela também serão apagados.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Excluir', style: 'destructive', onPress: () => onDeleteTrip(trip.id) },
+      ]
+    )
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -75,10 +90,7 @@ export function TripsScreen({
                       <View style={{ flex: 1 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                           <Text style={{ fontSize: 22 }}>{trip.emoji}</Text>
-                          <View style={{ flex: 1 }}>
-                            <Text style={styles.tripName}>{trip.name}</Text>
-                            <Text style={styles.tripDestination}>{trip.destination}</Text>
-                          </View>
+                          <Text style={styles.tripName}>{trip.name}</Text>
                         </View>
                         <Text style={styles.tripDates}>
                           {fmtDateShort(trip.startDate)} → {fmtDateShort(trip.endDate)}
@@ -94,7 +106,22 @@ export function TripsScreen({
                     <Text style={styles.tripExpenseCount}>
                       {tripExpenses.length} {tripExpenses.length === 1 ? 'gasto' : 'gastos'}
                     </Text>
-                    <Text style={[styles.tripSeeMore, { color: trip.gradientFrom }]}>Ver detalhes →</Text>
+                    <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                      <TouchableOpacity
+                        onPress={() => onEditTrip(trip)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        style={styles.smallIconBtn}
+                      >
+                        <Text style={{ fontSize: 13 }}>✏️</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => confirmDeleteTrip(trip)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        style={styles.smallIconBtn}
+                      >
+                        <Text style={{ fontSize: 13 }}>🗑️</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </TouchableOpacity>
               )
@@ -138,7 +165,6 @@ const styles = StyleSheet.create({
   },
   tripCardTop: { padding: 20, paddingBottom: 16, overflow: 'hidden' },
   tripName: { color: '#FFFFFF', fontSize: 17, fontWeight: '700', lineHeight: 20 },
-  tripDestination: { color: 'rgba(255,255,255,0.6)', fontSize: 12 },
   tripDates: { color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 4 },
   tripTotalLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '600', letterSpacing: 0.4 },
   tripTotalValue: { color: '#FFFFFF', fontSize: 22, fontWeight: '400' },
@@ -151,5 +177,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tripExpenseCount: { fontSize: 13, color: COLORS.textMuted },
-  tripSeeMore: { fontSize: 12, fontWeight: '600' },
+  smallIconBtn: { width: 28, height: 28, borderRadius: 8, backgroundColor: '#F0EEEC', alignItems: 'center', justifyContent: 'center' },
 })

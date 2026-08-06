@@ -3,11 +3,6 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { COLORS } from '../constants'
 
-/**
- * Barra fixa na parte de baixo da tela, com três botões na mesma altura:
- * "Home" (volta pra lista de viagens), "+" (adicionar) e "Sair" (logout).
- * Usada tanto na tela de viagens quanto no dashboard.
- */
 export function BottomNavBar({
   onHome,
   onAdd,
@@ -124,7 +119,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
+    elevation: 16,
   },
   addBtn: {
     width: 58,
@@ -134,6 +129,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 3,
     borderColor: COLORS.screenBg,
+    backgroundColor: COLORS.fabTo,
   },
   addBtnText: { color: '#FFFFFF', fontSize: 30, fontWeight: '700', marginTop: -3 },
   logoutBtn: {

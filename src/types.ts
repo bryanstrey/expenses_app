@@ -23,6 +23,8 @@ export interface City {
   id: string
   tripId: string
   name: string
+  startDate: string // AAAA-MM-DD
+  endDate: string // AAAA-MM-DD
 }
 
 export interface TouristSpot {
