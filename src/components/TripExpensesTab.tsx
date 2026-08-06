@@ -132,7 +132,7 @@ export function TripExpensesTab({
 
       {/* Chips de cidade */}
       {cities.length > 1 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 6 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10, height: 40, flexGrow: 0, flexShrink: 0 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 6, alignItems: 'center', flexGrow: 0 }}>
           <TouchableOpacity
             onPress={() => setCityFilter('Todos')}
             style={[styles.chip, cityFilter === 'Todos' ? { borderColor: gradientFrom, backgroundColor: `${gradientFrom}18` } : styles.chipInactive]}
@@ -153,7 +153,7 @@ export function TripExpensesTab({
 
       {/* Chips de categoria + botão de data */}
       <View style={styles.catRow}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1, height: 36 }} contentContainerStyle={{ alignItems: 'center', flexGrow: 0 }}>
           <TouchableOpacity
             onPress={() => setCatFilter('Todos')}
             style={[styles.chip, catFilter === 'Todos' ? { borderColor: gradientFrom, backgroundColor: `${gradientFrom}18` } : styles.chipInactive]}

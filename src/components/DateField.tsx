@@ -4,7 +4,6 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import { COLORS } from '../constants'
 import { dateToISO, fmtDateBR, isoToDate } from '../utils'
 
-
 export function DateField({
   label,
   value,

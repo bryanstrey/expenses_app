@@ -69,16 +69,42 @@ export async function deleteTrip(id: string): Promise<void> {
   if (error) throw error
 }
 
+/** Atualiza uma viagem existente. */
+export async function updateTrip(trip: Trip): Promise<void> {
+  const { error } = await supabase
+    .from('trips')
+    .update({
+      name: trip.name,
+      destination: trip.destination,
+      start_date: trip.startDate,
+      end_date: trip.endDate,
+      emoji: trip.emoji,
+      gradient_from: trip.gradientFrom,
+      gradient_to: trip.gradientTo,
+    })
+    .eq('id', trip.id)
+
+  if (error) throw error
+}
+
 // ─── Cities ─────────────────────────────────────────────────────────────────
 
 type CityRow = {
   id: string
   trip_id: string
   name: string
+  start_date: string | null
+  end_date: string | null
 }
 
 function rowToCity(row: CityRow): City {
-  return { id: row.id, tripId: row.trip_id, name: row.name }
+  return {
+    id: row.id,
+    tripId: row.trip_id,
+    name: row.name,
+    startDate: row.start_date ?? '',
+    endDate: row.end_date ?? '',
+  }
 }
 
 /** Busca todas as cidades de todas as viagens do usuário logado. */
@@ -101,14 +127,23 @@ export async function insertCity(city: City): Promise<void> {
     user_id: userId,
     trip_id: city.tripId,
     name: city.name,
+    start_date: city.startDate || null,
+    end_date: city.endDate || null,
   })
 
   if (error) throw error
 }
 
-/** Atualiza o nome de uma cidade. */
+/** Atualiza o nome e as datas de uma cidade. */
 export async function updateCity(city: City): Promise<void> {
-  const { error } = await supabase.from('cities').update({ name: city.name }).eq('id', city.id)
+  const { error } = await supabase
+    .from('cities')
+    .update({
+      name: city.name,
+      start_date: city.startDate || null,
+      end_date: city.endDate || null,
+    })
+    .eq('id', city.id)
   if (error) throw error
 }
 

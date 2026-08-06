@@ -16,21 +16,29 @@ import { uid, todayISO } from '../utils'
 import { DateField } from '../components/DateField'
 
 export function AddTripScreen({
+  initialTrip,
   onSave,
   onSaved,
   onBack,
 }: {
+  /** Se informado, o formulário abre em modo edição, já preenchido. */
+  initialTrip?: Trip
   onSave: (trip: Trip) => Promise<void>
-  /** Chamado depois que o salvamento terminou com sucesso, com o id da viagem criada. */
+  /** Chamado depois que uma viagem NOVA é criada com sucesso, com o id dela. */
   onSaved: (tripId: string) => void
   onBack: () => void
 }) {
-  const [name, setName] = useState('')
-  const [destination, setDestination] = useState('')
-  const [startDate, setStartDate] = useState(todayISO())
-  const [endDate, setEndDate] = useState(todayISO())
-  const [emoji, setEmoji] = useState('✈️')
-  const [gradientIdx, setGradientIdx] = useState(0)
+  const isEditing = !!initialTrip
+
+  const [name, setName] = useState(initialTrip?.name ?? '')
+  const [startDate, setStartDate] = useState(initialTrip?.startDate ?? todayISO())
+  const [endDate, setEndDate] = useState(initialTrip?.endDate ?? todayISO())
+  const [emoji, setEmoji] = useState(initialTrip?.emoji ?? '✈️')
+  const [gradientIdx, setGradientIdx] = useState(() => {
+    if (!initialTrip) return 0
+    const idx = TRIP_GRADIENTS.findIndex(([from]) => from === initialTrip.gradientFrom)
+    return idx >= 0 ? idx : 0
+  })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -38,7 +46,6 @@ export function AddTripScreen({
   const validate = () => {
     const e: Record<string, string> = {}
     if (!name.trim()) e.name = 'Informe o nome da viagem'
-    if (!destination.trim()) e.destination = 'Informe o destino'
     if (endDate < startDate) e.endDate = 'A data final não pode ser antes da inicial'
     return e
   }
@@ -52,9 +59,9 @@ export function AddTripScreen({
     setSaving(true)
     try {
       const trip: Trip = {
-        id: uid(),
+        id: initialTrip?.id ?? uid(),
         name: name.trim(),
-        destination: destination.trim(),
+        destination: '',
         startDate,
         endDate,
         emoji,
@@ -65,7 +72,11 @@ export function AddTripScreen({
       setSaved(true)
       setTimeout(() => {
         setSaved(false)
-        onSaved(trip.id)
+        if (isEditing) {
+          onBack()
+        } else {
+          onSaved(trip.id)
+        }
       }, 700)
     } catch (err: any) {
       setErrors({ submit: `Erro ao salvar: ${err?.message ?? 'tente novamente'}` })
@@ -83,14 +94,11 @@ export function AddTripScreen({
           <TouchableOpacity onPress={onBack} style={styles.backBtn}>
             <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerEyebrow}>NOVA VIAGEM</Text>
+          <Text style={styles.headerEyebrow}>{isEditing ? 'EDITAR VIAGEM' : 'NOVA VIAGEM'}</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <Text style={{ fontSize: 36 }}>{emoji}</Text>
-          <View>
-            <Text style={styles.headerTitle}>{name || 'Nova Viagem'}</Text>
-            <Text style={styles.headerSubtitle}>{destination || 'Destino...'}</Text>
-          </View>
+          <Text style={styles.headerTitle}>{name || 'Nova Viagem'}</Text>
         </View>
       </LinearGradient>
 
@@ -154,21 +162,6 @@ export function AddTripScreen({
           {errors.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
         </View>
 
-        {/* Destino */}
-        <View style={{ marginBottom: 18 }}>
-          <Text style={styles.fieldLabel}>DESTINO</Text>
-          <TextInput
-            placeholder="Ex: Roma, Itália"
-            value={destination}
-            onChangeText={t => {
-              setDestination(t)
-              setErrors(p => ({ ...p, destination: '' }))
-            }}
-            style={[styles.input, errors.destination && styles.inputError]}
-          />
-          {errors.destination ? <Text style={styles.errorText}>{errors.destination}</Text> : null}
-        </View>
-
         {/* Datas */}
         <View style={{ flexDirection: 'row', gap: 12, marginBottom: 18 }}>
           <View style={{ flex: 1 }}>
@@ -206,7 +199,7 @@ export function AddTripScreen({
             style={styles.submitBtn}
           >
             <Text style={styles.submitText}>
-              {saved ? '✓ Viagem criada!' : saving ? 'Salvando...' : 'Criar Viagem'}
+              {saved ? '✓ Salvo!' : saving ? 'Salvando...' : isEditing ? 'Salvar Alterações' : 'Criar Viagem'}
             </Text>
           </LinearGradient>
         </TouchableOpacity>
@@ -221,7 +214,6 @@ const styles = StyleSheet.create({
   backBtn: { width: 42, height: 42, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.22)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.35)', alignItems: 'center', justifyContent: 'center' },
   headerEyebrow: { color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '500', letterSpacing: 0.5 },
   headerTitle: { color: '#FFFFFF', fontSize: 26, fontWeight: '400' },
-  headerSubtitle: { color: 'rgba(255,255,255,0.5)', fontSize: 13 },
   form: { padding: 20, paddingBottom: 120 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: COLORS.textSecondary, letterSpacing: 0.5, marginBottom: 10 },
   emojiBtn: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },

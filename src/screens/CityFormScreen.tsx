@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { City, Trip } from '../types'
 import { COLORS } from '../constants'
-import { uid } from '../utils'
+import { uid, todayISO } from '../utils'
+import { DateField } from '../components/DateField'
 
 export function CityFormScreen({
   trip,
@@ -18,25 +19,41 @@ export function CityFormScreen({
 }) {
   const isEditing = !!initialCity
   const [name, setName] = useState(initialCity?.name ?? '')
-  const [error, setError] = useState('')
+  const [startDate, setStartDate] = useState(initialCity?.startDate || todayISO())
+  const [endDate, setEndDate] = useState(initialCity?.endDate || todayISO())
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
+  const validate = () => {
+    const e: Record<string, string> = {}
+    if (!name.trim()) e.name = 'Informe o nome da cidade'
+    if (endDate < startDate) e.endDate = 'A data final não pode ser antes da inicial'
+    return e
+  }
+
   const handleSave = async () => {
-    if (!name.trim()) {
-      setError('Informe o nome da cidade')
+    const e = validate()
+    if (Object.keys(e).length > 0) {
+      setErrors(e)
       return
     }
     setSaving(true)
     try {
-      await onSave({ id: initialCity?.id ?? uid(), tripId: trip.id, name: name.trim() })
+      await onSave({
+        id: initialCity?.id ?? uid(),
+        tripId: trip.id,
+        name: name.trim(),
+        startDate,
+        endDate,
+      })
       setSaved(true)
       setTimeout(() => {
         setSaved(false)
         onBack()
       }, 700)
     } catch (err: any) {
-      setError(`Erro ao salvar: ${err?.message ?? 'tente novamente'}`)
+      setErrors({ submit: `Erro ao salvar: ${err?.message ?? 'tente novamente'}` })
     } finally {
       setSaving(false)
     }
@@ -54,22 +71,52 @@ export function CityFormScreen({
         <Text style={styles.headerTitle}>{isEditing ? 'Editar Cidade' : 'Adicionar Cidade'}</Text>
       </LinearGradient>
 
-      <View style={styles.form}>
-        <Text style={styles.fieldLabel}>NOME DA CIDADE</Text>
-        <TextInput
-          placeholder="Ex: Roma, Brasília, Tóquio..."
-          value={name}
-          autoFocus
-          onChangeText={t => {
-            setName(t)
-            setError('')
-          }}
-          style={[styles.input, error && styles.inputError]}
-        />
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      </View>
+      <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
+        <View style={{ marginBottom: 18 }}>
+          <Text style={styles.fieldLabel}>NOME DA CIDADE</Text>
+          <TextInput
+            placeholder="Ex: Roma, Brasília, Tóquio..."
+            value={name}
+            autoFocus
+            onChangeText={t => {
+              setName(t)
+              setErrors(p => ({ ...p, name: '' }))
+            }}
+            style={[styles.input, errors.name && styles.inputError]}
+          />
+          {errors.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
+        </View>
+
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ flex: 1 }}>
+            <DateField
+              label="CHEGADA"
+              value={startDate}
+              onChange={t => {
+                setStartDate(t)
+                setErrors(p => ({ ...p, startDate: '' }))
+              }}
+              error={errors.startDate}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <DateField
+              label="SAÍDA"
+              value={endDate}
+              onChange={t => {
+                setEndDate(t)
+                setErrors(p => ({ ...p, endDate: '' }))
+              }}
+              error={errors.endDate}
+            />
+          </View>
+        </View>
+      </ScrollView>
 
       <View style={styles.submitWrap}>
+        {errors.submit ? (
+          <Text style={[styles.errorText, { textAlign: 'center', marginBottom: 8 }]}>{errors.submit}</Text>
+        ) : null}
         <TouchableOpacity onPress={handleSave} activeOpacity={0.85} disabled={saving}>
           <LinearGradient
             colors={saved ? ['#3A7A5A', '#3A7A5A'] : [trip.gradientFrom, trip.gradientTo]}
@@ -91,7 +138,7 @@ const styles = StyleSheet.create({
   backBtn: { width: 42, height: 42, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.22)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.35)', alignItems: 'center', justifyContent: 'center' },
   headerEyebrow: { color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '500', letterSpacing: 0.5 },
   headerTitle: { color: '#FFFFFF', fontSize: 26, fontWeight: '400' },
-  form: { padding: 20 },
+  form: { padding: 20, paddingBottom: 120 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: COLORS.textSecondary, letterSpacing: 0.5, marginBottom: 8 },
   input: {
     width: '100%',

@@ -9,6 +9,8 @@ import { supabase } from './src/lib/supabase'
 import {
   getAllTrips,
   insertTrip,
+  updateTrip,
+  deleteTrip,
   getAllCities,
   insertCity,
   updateCity,
@@ -34,6 +36,7 @@ import { SpotFormScreen } from './src/screens/SpotFormScreen'
 type Screen =
   | { type: 'trips' }
   | { type: 'add-trip' }
+  | { type: 'edit-trip'; trip: Trip }
   | { type: 'trip-overview'; tripId: string }
   | { type: 'add-city'; tripId: string }
   | { type: 'edit-city'; tripId: string; city: City }
@@ -107,6 +110,16 @@ export default function App() {
 
   const handleAddTrip = async (trip: Trip) => {
     await insertTrip(trip)
+    await refresh()
+  }
+
+  const handleUpdateTrip = async (trip: Trip) => {
+    await updateTrip(trip)
+    await refresh()
+  }
+
+  const handleDeleteTrip = async (id: string) => {
+    await deleteTrip(id)
     await refresh()
   }
 
@@ -210,6 +223,8 @@ export default function App() {
           expenses={expenses}
           onSelectTrip={id => setScreen({ type: 'trip-overview', tripId: id })}
           onAddTrip={() => setScreen({ type: 'add-trip' })}
+          onEditTrip={trip => setScreen({ type: 'edit-trip', trip })}
+          onDeleteTrip={handleDeleteTrip}
           onLogout={handleLogout}
         />
       )}
@@ -218,6 +233,15 @@ export default function App() {
         <AddTripScreen
           onSave={handleAddTrip}
           onSaved={tripId => setScreen({ type: 'trip-overview', tripId })}
+          onBack={() => setScreen({ type: 'trips' })}
+        />
+      )}
+
+      {screen.type === 'edit-trip' && (
+        <AddTripScreen
+          initialTrip={screen.trip}
+          onSave={handleUpdateTrip}
+          onSaved={() => setScreen({ type: 'trips' })}
           onBack={() => setScreen({ type: 'trips' })}
         />
       )}
